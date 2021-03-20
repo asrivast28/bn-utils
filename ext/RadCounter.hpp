@@ -18,7 +18,7 @@
 #include <numeric>
 #include <vector>
 
-#include <bit_util.hpp>
+#include "bit_util.hpp"
 
 
 template <typename Size, typename Data = uint8_t> class RadCounter {

@@ -19,8 +19,8 @@
 #include <cmath>
 #include <vector>
 
-#include <bitvector.hpp>
-#include <bit_util.hpp>
+#include "bitvector.hpp"
+#include "bit_util.hpp"
 
 
 template <typename Size> class BVCounter {

@@ -20,7 +20,7 @@
 #ifndef DETAIL_UINTSET_HPP_
 #define DETAIL_UINTSET_HPP_
 
-#include "bit_util.hpp"
+#include "../ext/bit_util.hpp"
 
 #include "utils/Logging.hpp"
 
