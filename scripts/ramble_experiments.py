@@ -244,7 +244,7 @@ def run_experiment(basedir, scratch, config, undirected, repeat, bnlearn, compar
         if compare:
             print('Comparing generated file %s with %s' % (outfile, dotfile))
             sys.stdout.flush()
-            compare_args = [join(basedir, 'scripts', 'compare_dot'), outfile, dotfile]
+            compare_args = [join(basedir, 'common', 'scripts', 'compare_dot'), outfile, dotfile]
             subprocess.check_call(' '.join(compare_args), shell=True)
         yield parse_runtimes(output)
         r += 1
@@ -279,7 +279,7 @@ def main():
         for dataset in datasets:
             ds = list(all_datasets[dataset])
             all_datasets[dataset] = tuple([join(args.basedir, ds[0])] + ds[1:])
-    executable = join(args.basedir, 'ramble' + args.suffix) if not args.bnlearn else join(args.basedir, 'scripts/ramble_bnlearn.R')
+    executable = join(args.basedir, 'ramble' + args.suffix) if not args.bnlearn else join(args.basedir, 'common', 'scripts', 'ramble_bnlearn.R')
     exec_configs = get_executable_configurations(executable, datasets, args.algorithm, args.arguments, args.undirected, args.bnlearn)
     if not args.bnlearn:
         mpi_configs = get_mpi_configurations(args.scratch, args.process, args.ppn)
