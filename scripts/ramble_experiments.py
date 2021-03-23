@@ -19,6 +19,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import OrderedDict
+from datetime import datetime
 from itertools import product
 import os
 import os.path
@@ -223,6 +224,7 @@ def run_experiment(basedir, scratch, config, undirected, repeat, bnlearn, compar
     t = 0
     while r < repeat:
         arguments = config[-1] + ' -o %s' % outfile
+        print('Started the run at', datetime.now().strftime('%c'))
         print(arguments)
         sys.stdout.flush()
         try:
@@ -241,6 +243,8 @@ def run_experiment(basedir, scratch, config, undirected, repeat, bnlearn, compar
         else:
             t = 0
         sys.stdout.flush()
+        print('Finished the run at', datetime.now().strftime('%c'))
+        print()
         if compare:
             print('Comparing generated file %s with %s' % (outfile, dotfile))
             sys.stdout.flush()

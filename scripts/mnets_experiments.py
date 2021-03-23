@@ -19,6 +19,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import OrderedDict
+from datetime import datetime
 from itertools import product
 import os
 import os.path
@@ -215,6 +216,7 @@ def run_experiment(basedir, scratch, config, repeat, lemontree, compare):
     t = 0
     while r < repeat:
         arguments = config[-1] + ' -o %s' % outdir
+        print('Started the run at', datetime.now().strftime('%c'))
         print(arguments)
         sys.stdout.flush()
         try:
@@ -233,6 +235,8 @@ def run_experiment(basedir, scratch, config, repeat, lemontree, compare):
         else:
             t = 0
         sys.stdout.flush()
+        print('Finished the run at', datetime.now().strftime('%c'))
+        print()
         if compare:
             print('Comparing generated files in %s with %s' % (outdir, dirname))
             sys.stdout.flush()
@@ -260,12 +264,11 @@ def main():
         mpi_configs = get_mpi_configurations(args.scratch, args.process, args.ppn)
         all_configs = list((executable[0], executable[1], mpi[0], mpi[-1] + ' ' + executable[-1]) for executable, mpi in product(exec_configs, mpi_configs))
     else:
+        if args.process or args.ppn:
+            print('WARNING: Ignoring the -p and --ppn arguments while running Lemon-Tree')
         all_configs = []
-        for config, p, ppn in product(exec_configs, args.process, args.ppn):
-            par_config = ''
-            if not args.lemontree:
-                par_config = '--nprocs %d --ppn %d' % (p, ppn)
-            all_configs.append(tuple(list(config[:-1]) + [p, config[-1] + ' ' + par_config]))
+        for config in exec_configs:
+            all_configs.append(tuple(list(config[:-1]) + [1, config[-1]]))
     print('*** Writing the results to', os.path.abspath(args.results), '***\n\n')
     with open(args.results, 'w') as results:
         results.write('# warmup,reading,ganesh,consensus,trees,candidates,choose,sync,parents,modules,network,writing\n')
