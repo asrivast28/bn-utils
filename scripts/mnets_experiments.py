@@ -188,6 +188,7 @@ def get_runtime(action, output, required=True):
 def parse_runtimes(output):
     # optional runtimes
     warmup = get_runtime('warming up MPI', output, required=False)
+    reading = get_runtime('reading the file', output, required=False)
     ganesh = get_runtime('the GaneSH run', output, required=False)
     consensus = get_runtime('consensus clustering', output, required=False)
     trees = get_runtime('learning the module trees', output, required=False)
@@ -197,8 +198,7 @@ def parse_runtimes(output):
     parents = get_runtime('learning the module parents', output, required=False)
     modules = get_runtime('learning the modules', output, required=False)
     writing = get_runtime('writing the files', output, required=False)
-    # required runtimes
-    reading = get_runtime('reading the file', output, required=True)
+    # required runtime
     network = get_runtime('getting the network', output, required=True)
     return [warmup, reading, ganesh, consensus, trees, candidates, choose, sync, parents, modules, network, writing]
 
