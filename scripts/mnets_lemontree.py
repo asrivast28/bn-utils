@@ -206,7 +206,7 @@ def main():
         if configs['task'] == 'regulators' and not configs['reg_file']:
             configs['reg_file'] = write_variables(args.file, args.separator, args.colobs, args.varnames, args.indices)
     runtimes = run_lemontree(args.executable, task_configs, args.outdir, args.prefix, args.verbose)
-    print('Time taken in learning the network: %.6f' % (time() - t))
+    print('Time taken in getting the network: %.6f' % (time() - t))
     message = {
         'ganesh'         : 'the GaneSH run',
         'tight_clusters' : 'consensus clustering',

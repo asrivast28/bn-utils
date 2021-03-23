@@ -196,7 +196,7 @@ def parse_runtimes(output):
     sync = get_runtime('synchronizing the modules', output, required=False)
     parents = get_runtime('learning the module parents', output, required=False)
     modules = get_runtime('learning the modules', output, required=False)
-    writing = get_runtime('writing the files', output, required=True)
+    writing = get_runtime('writing the files', output, required=False)
     # required runtimes
     reading = get_runtime('reading the file', output, required=True)
     network = get_runtime('getting the network', output, required=True)
@@ -262,7 +262,9 @@ def main():
     else:
         all_configs = []
         for config, p, ppn in product(exec_configs, args.process, args.ppn):
-            par_config = '--nprocs %d --ppn %d' % (p, ppn)
+            par_config = ''
+            if not args.lemontree:
+                par_config = '--nprocs %d --ppn %d' % (p, ppn)
             all_configs.append(tuple(list(config[:-1]) + [p, config[-1] + ' ' + par_config]))
     print('*** Writing the results to', os.path.abspath(args.results), '***\n\n')
     with open(args.results, 'w') as results:
