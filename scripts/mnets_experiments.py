@@ -115,7 +115,6 @@ def get_experiment_datasets(basedir, datasets, variables, observations, scratch)
             experiment_datasets.append(dname)
         else:
             dataset = all_datasets[dname]
-            read = read_dataset(join(basedir, dataset[0]), dataset[3], dataset[4], dataset[5], dataset[6])
             n = n if n is not None else dataset[1]
             m = m if m is not None else dataset[2]
             exp_dname = '%s_n%d_m%d' % (dname, n, m)
@@ -124,6 +123,7 @@ def get_experiment_datasets(basedir, datasets, variables, observations, scratch)
             exp_dataset[1] = n
             exp_dataset[2] = m
             if not os.path.exists(exp_dataset[0]):
+                read = read_dataset(join(basedir, dataset[0]), dataset[3], dataset[4], dataset[5], dataset[6])
                 write_dataset(read.iloc[:m,:n], exp_dataset[0], exp_dataset[3], exp_dataset[4], exp_dataset[5], exp_dataset[6])
             all_datasets.update([(exp_dname, tuple(exp_dataset))])
             experiment_datasets.append(exp_dname)
