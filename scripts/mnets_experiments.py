@@ -99,7 +99,8 @@ def parse_args():
     parser.add_argument('-r', '--repeat', metavar='N', type=int, default=NUM_REPEATS, help='Number of times the experiments should be repeated.')
     parser.add_argument('--lemontree', action='store_true', help='Flag for running lemon-tree instead of our implementation.')
     parser.add_argument('--results', metavar = 'FILE', type=str, default='results_%s' % os.environ.get('PBS_JOBID', 0), help='Name of the csv file to which results will be written.')
-    parser.add_argument('--suffix', type=str, default='', help='Suffix to add to the executable.')
+    parser.add_argument('--exec-suffix', type=str, default='', help='Suffix to add to the executable.')
+    parser.add_argument('--output-suffix', type=str, default='', help='Suffix to add to the output directory.')
     args = parser.parse_args()
     parse_datasets(args)
     return args
@@ -204,13 +205,14 @@ def parse_runtimes(output):
     return [warmup, reading, ganesh, consensus, trees, candidates, choose, sync, parents, modules, network, writing]
 
 
-def run_experiment(basedir, scratch, config, repeat, lemontree, compare):
+def run_experiment(basedir, scratch, config, outsuffix, repeat, lemontree, compare):
     import subprocess
 
     MAX_TRIES = 5
     dirname = join(scratch, config[0])
     if lemontree:
         dirname += '_lemontree'
+    dirname += outsuffix
     outdir = dirname if not os.path.exists(dirname) else TemporaryDirectory(dir=scratch).name
     r = 0
     t = 0
@@ -258,7 +260,7 @@ def main():
         for dataset in datasets:
             ds = list(all_datasets[dataset])
             all_datasets[dataset] = tuple([join(args.basedir, ds[0])] + ds[1:])
-    executable = join(args.basedir, 'mnets' + args.suffix) if not args.lemontree else join(args.basedir, 'common', 'scripts', 'mnets_lemontree.py')
+    executable = join(args.basedir, 'mnets' + args.exec_suffix) if not args.lemontree else join(args.basedir, 'common', 'scripts', 'mnets_lemontree.py')
     exec_configs = get_executable_configurations(executable, datasets, args.algorithm, args.arguments, args.lemontree)
     if not args.lemontree:
         mpi_configs = get_mpi_configurations(args.scratch, args.process, args.ppn)
@@ -275,7 +277,7 @@ def main():
         for config in all_configs:
             comment = 'runtime for dataset=%s using algorithm=%s on processors=%d' % tuple(config[:3])
             results.write('# %s %s\n' % ('our' if not args.lemontree else 'lemontree', comment))
-            for rt in run_experiment(args.basedir, args.scratch, config, args.repeat, args.lemontree, True):
+            for rt in run_experiment(args.basedir, args.scratch, config, args.output_suffix, args.repeat, args.lemontree, True):
                 results.write(','.join(str(t) for t in rt) + '\n')
                 results.flush()
 
