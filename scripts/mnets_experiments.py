@@ -33,6 +33,8 @@ from discretize import read_dataset, write_dataset
 big_datasets = OrderedDict([
     #(name        , (-f, -n, -m, -s, -c, -v, -i)),
     ('yeast'      , ('data/yeast/yeast_microarray_expression.tsv', 5716, 2577, '\t', True, True, True)),
+    ('development', ('data/athaliana/athaliana_development_exp.tsv', 18373, 5102, ' ', True, True, True)),
+    ('complete'   , ('data/athaliana/athaliana_complete_exp.tsv', 18380, 16838, ' ', True, True, True)),
     ])
 
 dataset_groups = dict([
@@ -68,7 +70,7 @@ def parse_datasets(args):
     '''
     experiment_datasets = []
     if args.dataset is None:
-        args.dataset = list(big_datasets.keys())
+        args.dataset = list(big_datasets.keys())[:1]
     for d in args.dataset:
         if d in all_datasets:
             experiment_datasets.append(d)
