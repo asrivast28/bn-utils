@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 ##
-# @file mnets_lemontree.py
-# @brief Script for running lemon-tree using mnets arguments.
+# @file parsimone_lemontree.py
+# @brief Script for running lemon-tree using ParsiMoNe arguments.
 # @author Ankit Srivastava <asrivast@gatech.edu>
 #
 # Copyright 2021 Georgia Institute of Technology
@@ -35,7 +35,7 @@ def parse_args():
     LEMONTREE_DIR = path.join(path.expanduser('~'), 'data', 'lemon-tree')
     LEMONTREE_RUN = path.join(LEMONTREE_DIR, 'LemonTree', 'run_task.sh')
 
-    parser = ArgumentParser(description='Run lemon-tree using mnets configuration')
+    parser = ArgumentParser(description='Run lemon-tree using ParsiMoNe configuration')
     parser.add_argument('executable', nargs='?', metavar='RUN', default=LEMONTREE_RUN, help='Path to the lemon-tree task executable')
     parser.add_argument('-n', '--nvars', metavar='N', type=int, help='Number of variables in the dataset')
     parser.add_argument('-m', '--nobs', metavar='M', type=int, help='Number of observations in the dataset')

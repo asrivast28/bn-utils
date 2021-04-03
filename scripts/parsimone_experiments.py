@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 ##
-# @file mnets_experiments.py
-# @brief Script for experimenting with mnets.
+# @file parsimone_experiments.py
+# @brief Script for experimenting with ParsiMoNe.
 # @author Ankit Srivastava <asrivast@gatech.edu>
 #
 # Copyright 2020 Georgia Institute of Technology
@@ -136,7 +136,7 @@ def get_experiment_datasets(basedir, datasets, variables, observations, scratch)
 
 def get_executable_configurations(executable, datasets, algorithms, arguments, lemontree):
     boolean_args = ['-c', '-v', '-i']
-    default_mnets_args = ['-r', '--warmup', '--hostnames']
+    default_parsimone_args = ['-r', '--warmup', '--hostnames']
     configurations = []
     for name, algorithm in product(datasets, algorithms):
         dataset_args = all_datasets[name]
@@ -147,7 +147,7 @@ def get_executable_configurations(executable, datasets, algorithms, arguments, l
         if arguments is not None:
             script_args.append(arguments)
         if not lemontree:
-            script_args.extend(default_mnets_args)
+            script_args.extend(default_parsimone_args)
         configurations.append((name, algorithm, ' '.join(script_args)))
     return configurations
 
@@ -262,7 +262,7 @@ def main():
         for dataset in datasets:
             ds = list(all_datasets[dataset])
             all_datasets[dataset] = tuple([join(args.basedir, ds[0])] + ds[1:])
-    executable = join(args.basedir, 'mnets' + args.exec_suffix) if not args.lemontree else join(args.basedir, 'common', 'scripts', 'mnets_lemontree.py')
+    executable = join(args.basedir, 'parsimone' + args.exec_suffix) if not args.lemontree else join(args.basedir, 'common', 'scripts', 'parsimone_lemontree.py')
     exec_configs = get_executable_configurations(executable, datasets, args.algorithm, args.arguments, args.lemontree)
     if not args.lemontree:
         mpi_configs = get_mpi_configurations(args.scratch, args.process, args.ppn)
