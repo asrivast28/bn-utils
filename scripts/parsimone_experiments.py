@@ -245,7 +245,11 @@ def run_experiment(basedir, scratch, config, outsuffix, repeat, lemontree, compa
             print('Comparing generated files in %s with %s' % (outdir, dirname))
             sys.stdout.flush()
             compare_args = [join(basedir, 'common', 'scripts', 'compare_lemontree.py'), outdir, dirname]
-            subprocess.check_call(' '.join(compare_args), shell=True)
+            try:
+                subprocess.check_call(' '.join(compare_args), shell=True)
+            except subprocess.CalledProcessError as ce:
+                print(ce)
+                print('ERROR: Comparison failed')
         yield parse_runtimes(output)
         r += 1
 
