@@ -89,7 +89,7 @@ def parse_args():
     from os.path import expanduser, realpath
 
     parser = argparse.ArgumentParser(description='Run scaling experiments')
-    parser.add_argument('-b', '--basedir', metavar='DIR', type=str, default=realpath(join(expanduser('~'), 'mnets')), help='Base directory for running the experiments.')
+    parser.add_argument('-b', '--basedir', metavar='DIR', type=str, default=realpath(join(expanduser('~'), 'ParsiMoNe')), help='Base directory for running the experiments.')
     parser.add_argument('-s', '--scratch', metavar='DIR', type=str, default=realpath(join(expanduser('~'), 'scratch')), help='Scratch directory, visible to all the nodes.')
     parser.add_argument('-d', '--dataset', metavar='NAME', type=str, nargs='*', help='Datasets (or groups of datasets) to be used.')
     parser.add_argument('-n', '--variables', metavar='N', type=int, nargs='*', help='Number of variable(s) to be used.')
@@ -195,11 +195,11 @@ def parse_runtimes(output):
     reading = get_runtime('reading the file', output, required=False)
     ganesh = get_runtime('the GaneSH run', output, required=False)
     consensus = get_runtime('consensus clustering', output, required=False)
-    trees = get_runtime('learning the module trees', output, required=False)
+    trees = get_runtime('learning module trees', output, required=False)
     candidates = get_runtime('learning candidate splits', output, required=False)
     choose = get_runtime('choosing splits', output, required=False)
     sync = get_runtime('synchronizing the modules', output, required=False)
-    parents = get_runtime('learning the module parents', output, required=False)
+    parents = get_runtime('learning module parents', output, required=False)
     modules = get_runtime('learning the modules', output, required=False)
     writing = get_runtime('writing the files', output, required=False)
     # required runtime
