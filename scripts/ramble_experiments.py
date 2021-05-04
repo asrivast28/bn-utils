@@ -249,7 +249,11 @@ def run_experiment(basedir, scratch, config, undirected, repeat, bnlearn, compar
             print('Comparing generated file %s with %s' % (outfile, dotfile))
             sys.stdout.flush()
             compare_args = [join(basedir, 'common', 'scripts', 'compare_dot'), outfile, dotfile]
-            subprocess.check_call(' '.join(compare_args), shell=True)
+            try:
+                subprocess.check_call(' '.join(compare_args), shell=True)
+            except subprocess.CalledProcessError as ce:
+                print(ce)
+                print('ERROR: Comparison failed')
         yield parse_runtimes(output)
         r += 1
 
