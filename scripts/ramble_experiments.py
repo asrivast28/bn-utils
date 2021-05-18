@@ -227,17 +227,17 @@ def run_experiment(basedir, scratch, config, undirected, repeat, bnlearn, compar
         print('Started the run at', datetime.now().strftime('%c'))
         print(arguments)
         sys.stdout.flush()
-        try:
-            output = ''
-            process = subprocess.Popen(arguments, shell=True, stdout=subprocess.PIPE)
-            for line in iter(process.stdout.readline, b''):
-                line = line.decode('utf-8')
-                output += line
-                print(line, end='')
-        except subprocess.CalledProcessError:
+        output = ''
+        process = subprocess.Popen(arguments, shell=True, stdout=subprocess.PIPE)
+        for line in iter(process.stdout.readline, b''):
+            line = line.decode('utf-8')
+            output += line
+            print(line, end='')
+        process.communicate()
+        if process.returncode != 0:
             t += 1
             if t == MAX_TRIES:
-                raise
+                raise RuntimeError('Run failed multiple times.')
             print('Run failed. Retrying.')
             continue
         else:
@@ -307,6 +307,7 @@ def main():
         for config, p, ppn in product(exec_configs, args.process, args.ppn):
             par_config = '--nprocs %d --ppn %d' % (p, ppn)
             all_configs.append(tuple(list(config[:-1]) + [p, config[-1] + ' ' + par_config]))
+    print('*** Writing the results to', os.path.abspath(args.results), '***\n\n')
     with open(args.results, 'w') as results:
         results.write('# warmup,reading,redistributing,blankets,symmetry,sync,neighbors,direction,mxx,gsquare,network,writing\n')
         for config in all_configs:

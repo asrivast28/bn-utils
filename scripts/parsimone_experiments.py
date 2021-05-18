@@ -223,17 +223,17 @@ def run_experiment(basedir, scratch, config, outsuffix, repeat, lemontree, compa
         print('Started the run at', datetime.now().strftime('%c'))
         print(arguments)
         sys.stdout.flush()
-        try:
-            output = ''
-            process = subprocess.Popen(arguments, shell=True, stdout=subprocess.PIPE)
-            for line in iter(process.stdout.readline, b''):
-                line = line.decode('utf-8')
-                output += line
-                print(line, end='')
-        except subprocess.CalledProcessError:
+        output = ''
+        process = subprocess.Popen(arguments, shell=True, stdout=subprocess.PIPE)
+        for line in iter(process.stdout.readline, b''):
+            line = line.decode('utf-8')
+            output += line
+            print(line, end='')
+        process.communicate()
+        if process.returncode != 0:
             t += 1
             if t == MAX_TRIES:
-                raise
+                raise RuntimeError('Run failed multiple times.')
             print('Run failed. Retrying.')
             continue
         else:
