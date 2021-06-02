@@ -1,3 +1,4 @@
 /scripts/compare_dot
 /scripts/compare_dot.o
 *.un~
+__pycache__
