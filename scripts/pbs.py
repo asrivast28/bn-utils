@@ -81,7 +81,7 @@ def create_submission_script(args):
         # Account info needs to go before queue info
         preamble_lines.insert(1, '#PBS -A %s\t# account name' % args.account)
     if args.depend:
-        preamble_lines.append('#PBS -W depend=afterok:%s\t# job ID of the job on which this job depends' % args.depend)
+        preamble_lines.append('#PBS -W depend=afterany:%s\t# job ID of the job on which this job depends' % args.depend)
     if args.after:
         preamble_lines.append('#PBS -a %s\t# delay executing the job until the given time and date' % args.after)
     preamble = '\n'.join(preamble_lines) % (args.name, args.time, args.nodes, args.procs, args.queue, output) + '\n'
