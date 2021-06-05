@@ -121,6 +121,7 @@ def parse_args():
     parser.add_argument('-d', '--dataset', metavar='NAME', type=str, nargs='*', help='Datasets (or groups of datasets) to be used.')
     parser.add_argument('-a', '--algorithm', metavar='NAME', type=str, nargs='*', default=all_algorithms, help='Algorithms to be used.')
     parser.add_argument('-g', '--arguments', metavar='ARGS', type=str, help='Arguments to be passed to the underlying script.')
+    parser.add_argument('-m', '--mpi-arguments', metavar='ARGS', type=str, help='Arguments to be passed to mpirun.')
     parser.add_argument('-u', '--undirected', action='store_true', help='Flag for generating undirected networks.')
     parser.add_argument('-p', '--process', metavar='P', type=int, nargs='*', default=all_processes, help='Processes to be used.')
     parser.add_argument('--ppn', metavar='PPN', type=int, nargs='*', default=[list(ppn_mappings.keys())[0]], help='Number of processes per node to be used.')
@@ -168,13 +169,15 @@ def get_hostfile(scratch, ppn):
     return hf.name
 
 
-def get_mpi_configurations(scratch, processes, ppns):
+def get_mpi_configurations(scratch, processes, ppns, extra_mpi_args):
     default_mpi_args = ['-env MV2_SHOW_CPU_BINDING 1']
     configurations = []
     ppn_hostfiles = dict((ppn, get_hostfile(scratch, ppn)) for ppn in ppns)
     for p, ppn in product(processes, ppns):
         mpi_args = ['mpirun -np %d -hostfile %s -env MV2_CPU_MAPPING %s' % (p, ppn_hostfiles[ppn], ppn_mappings[ppn])]
         mpi_args.extend(default_mpi_args)
+        if extra_mpi_args is not None:
+            mpi_args.append(extra_mpi_args)
         configurations.append((p, ' '.join(mpi_args)))
     return configurations
 
@@ -290,7 +293,7 @@ def main():
     executable = join(args.basedir, 'ramble' + args.suffix) if not args.bnlearn else join(args.basedir, 'common', 'scripts', 'ramble_bnlearn.R')
     exec_configs = get_executable_configurations(executable, datasets, args.algorithm, args.arguments, args.undirected, args.bnlearn)
     if not args.bnlearn:
-        mpi_configs = get_mpi_configurations(args.scratch, args.process, args.ppn)
+        mpi_configs = get_mpi_configurations(args.scratch, args.process, args.ppn, args.mpi_arguments)
         if args.weak:
             all_configs = []
             i_m = 0

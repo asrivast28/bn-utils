@@ -96,6 +96,7 @@ def parse_args():
     parser.add_argument('-m', '--observations', metavar='M', type=int, nargs='*', help='Number of observation(s) to be used.')
     parser.add_argument('-a', '--algorithm', metavar='NAME', type=str, nargs='*', default=[all_algorithms[0]], help='Algorithms to be used.')
     parser.add_argument('-g', '--arguments', metavar='ARGS', type=str, help='Arguments to be passed to the underlying script.')
+    parser.add_argument('-m', '--mpi-arguments', metavar='ARGS', type=str, help='Arguments to be passed to mpirun.')
     parser.add_argument('-p', '--process', metavar='P', type=int, nargs='*', default=all_processes, help='Processes to be used.')
     parser.add_argument('--ppn', metavar='PPN', type=int, nargs='*', default=[list(ppn_mappings.keys())[0]], help='Number of processes per node to be used.')
     parser.add_argument('-r', '--repeat', metavar='N', type=int, default=NUM_REPEATS, help='Number of times the experiments should be repeated.')
@@ -166,13 +167,15 @@ def get_hostfile(scratch, ppn):
     return hf.name
 
 
-def get_mpi_configurations(scratch, processes, ppns):
+def get_mpi_configurations(scratch, processes, ppns, extra_mpi_args):
     default_mpi_args = ['-env MV2_SHOW_CPU_BINDING 1']
     configurations = []
     ppn_hostfiles = dict((ppn, get_hostfile(scratch, ppn)) for ppn in ppns)
     for p, ppn in product(processes, ppns):
         mpi_args = ['mpirun -np %d -hostfile %s -env MV2_CPU_MAPPING %s' % (p, ppn_hostfiles[ppn], ppn_mappings[ppn])]
         mpi_args.extend(default_mpi_args)
+        if extra_mpi_args is not None:
+            mpi_args.append(extra_mpi_args)
         configurations.append((p, ' '.join(mpi_args)))
     return configurations
 
@@ -269,7 +272,7 @@ def main():
     executable = join(args.basedir, 'parsimone' + args.exec_suffix) if not args.lemontree else join(args.basedir, 'common', 'scripts', 'parsimone_lemontree.py')
     exec_configs = get_executable_configurations(executable, datasets, args.algorithm, args.arguments, args.lemontree)
     if not args.lemontree:
-        mpi_configs = get_mpi_configurations(args.scratch, args.process, args.ppn)
+        mpi_configs = get_mpi_configurations(args.scratch, args.process, args.ppn, args.mpi_arguments)
         all_configs = list((executable[0], executable[1], mpi[0], mpi[-1] + ' ' + executable[-1]) for executable, mpi in product(exec_configs, mpi_configs))
     else:
         if args.process or args.ppn:
