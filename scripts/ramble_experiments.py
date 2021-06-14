@@ -171,7 +171,7 @@ def get_hostfile(scratch, ppn):
 
 
 def get_mpi_configurations(scratch, processes, ppns, extra_mpi_args):
-    default_mpi_args = ['-env MV2_SHOW_CPU_BINDING 1']
+    default_mpi_args = ['-env MV2_SHOW_CPU_BINDING 1', '-env MV2_HYBRID_ENABLE_THRESHOLD 8192']
     configurations = []
     ppn_hostfiles = dict((ppn, get_hostfile(scratch, ppn)) for ppn in ppns)
     for p, ppn in product(processes, ppns):
