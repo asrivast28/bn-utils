@@ -236,7 +236,8 @@ def run_experiment(basedir, scratch, config, outsuffix, repeat, lemontree, compa
         if process.returncode != 0:
             t += 1
             if t == MAX_TRIES:
-                raise RuntimeError('Run failed multiple times.')
+                print('ERROR: Run failed %d times' % t)
+                yield None
             print('Run failed. Retrying.')
             continue
         else:
@@ -287,8 +288,9 @@ def main():
             comment = 'runtime for dataset=%s using algorithm=%s on processors=%d' % tuple(config[:3])
             results.write('# %s %s\n' % ('our' if not args.lemontree else 'lemontree', comment))
             for rt in run_experiment(args.basedir, args.scratch, config, args.output_suffix, args.repeat, args.lemontree, True):
-                results.write(','.join(str(t) for t in rt) + '\n')
-                results.flush()
+                if rt is not None:
+                    results.write(','.join(str(t) for t in rt) + '\n')
+                    results.flush()
 
 
 if __name__ == '__main__':

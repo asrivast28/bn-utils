@@ -240,7 +240,8 @@ def run_experiment(basedir, scratch, config, undirected, repeat, bnlearn, compar
         if process.returncode != 0:
             t += 1
             if t == MAX_TRIES:
-                raise RuntimeError('Run failed multiple times.')
+                print('ERROR: Run failed %d times' % t)
+                yield None
             print('Run failed. Retrying.')
             continue
         else:
@@ -317,8 +318,9 @@ def main():
             comment = 'runtime for dataset=%s using algorithm=%s on processors=%d' % tuple(config[:3])
             results.write('# %s %s\n' % ('our' if not args.bnlearn else 'bnlearn', comment))
             for rt in run_experiment(args.basedir, args.scratch, config, args.undirected, args.repeat, args.bnlearn, not (args.weak or args.bnlearn)):
-                results.write(','.join(str(t) for t in rt) + '\n')
-                results.flush()
+                if rt is not None:
+                    results.write(','.join(str(t) for t in rt) + '\n')
+                    results.flush()
 
 
 if __name__ == '__main__':
