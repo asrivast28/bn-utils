@@ -21,6 +21,7 @@
 from collections import OrderedDict
 from datetime import datetime
 from itertools import product
+from multiprocessing import cpu_count
 import os
 import os.path
 from os.path import join, basename
@@ -98,7 +99,7 @@ def parse_args():
     parser.add_argument('-g', '--arguments', metavar='ARGS', type=str, help='Arguments to be passed to the underlying script.')
     parser.add_argument('-m', '--mpi-arguments', metavar='ARGS', type=str, help='Arguments to be passed to mpirun.')
     parser.add_argument('-p', '--process', metavar='P', type=int, nargs='*', default=all_processes, help='Processes to be used.')
-    parser.add_argument('--ppn', metavar='PPN', type=int, nargs='*', default=[list(ppn_mappings.keys())[0]], help='Number of processes per node to be used.')
+    parser.add_argument('--ppn', metavar='PPN', type=int, nargs='*', default=cpu_count(), help='Number of processes per node to be used')
     parser.add_argument('-r', '--repeat', metavar='N', type=int, default=NUM_REPEATS, help='Number of times the experiments should be repeated.')
     parser.add_argument('--lemontree', action='store_true', help='Flag for running lemon-tree instead of our implementation.')
     parser.add_argument('--results', metavar = 'FILE', type=str, default='results_%s' % os.environ.get('PBS_JOBID', 0), help='Name of the csv file to which results will be written.')
