@@ -98,7 +98,7 @@ def parse_args():
     parser.add_argument('-a', '--algorithm', metavar='NAME', type=str, nargs='*', default=[all_algorithms[0]], help='Algorithms to be used')
     parser.add_argument('-g', '--arguments', metavar='ARGS', type=str, help='Arguments to be passed to the underlying script')
     parser.add_argument('-p', '--process', metavar='P', type=int, nargs='*', default=all_processes, help='Processes to be used')
-    parser.add_argument('--ppn', metavar='PPN', type=int, nargs='*', default=cpu_count(), help='Number of processes per node to be used')
+    parser.add_argument('--ppn', metavar='PPN', type=int, nargs='*', default=[cpu_count()], help='Number of processes per node to be used')
     parser.add_argument('-r', '--repeat', metavar='N', type=int, default=NUM_REPEATS, help='Number of times the experiments should be repeated')
     parser.add_argument('--mpi-arguments', metavar='ARGS', type=str, help='Arguments to be passed to mpirun')
     parser.add_argument('--lemontree', action='store_true', help='Flag for running lemon-tree instead of our implementation')
