@@ -24,7 +24,7 @@ from itertools import product
 from multiprocessing import cpu_count
 import os
 import os.path
-from os.path import join, basename
+from os.path import basename, isfile, join, splitext
 import sys
 from tempfile import NamedTemporaryFile
 
@@ -105,7 +105,14 @@ def parse_datasets(args):
         elif d in dataset_groups:
             experiment_datasets.extend(list(dataset_groups[d].keys()))
         else:
-            raise RuntimeError('Dataset %s is not recognized' % d)
+            try:
+                rd = read_dataset(d, args.separator, args.colobs, args.varnames, args.indices)
+                m, n = rd.shape
+                name = splitext(basename(d))[0]
+                all_datasets[name] = (d, n, m, args.separator, args.colobs, args.varnames, args.indices)
+                experiment_datasets.append(name)
+            except:
+                raise RuntimeError('Dataset %s is not recognized' % d)
     args.dataset = experiment_datasets
 
 
@@ -120,6 +127,10 @@ def parse_args():
     parser.add_argument('--basedir', metavar='DIR', type=str, default=realpath(join(expanduser('~'), 'ramBLe')), help='Base directory for running the experiments')
     parser.add_argument('--scratch', metavar='DIR', type=str, default=realpath(join(expanduser('~'), 'scratch')), help='Scratch directory, visible to all the nodes')
     parser.add_argument('-d', '--dataset', metavar='NAME', type=str, nargs='*', help='Predefined dataset (or groups of datasets) or filename containing the dataset')
+    parser.add_argument('-s', '--separator', type=str, metavar='DELIM', help='Delimiting character in the data set file')
+    parser.add_argument('-c', '--colobs', action='store_true', help='The data set file contains observations in columns')
+    parser.add_argument('-v', '--varnames', action='store_true', help='The data set file contains variable names')
+    parser.add_argument('-i', '--indices', action='store_true', help='The data set file contains observation indices')
     parser.add_argument('-a', '--algorithm', metavar='NAME', type=str, nargs='*', default=all_algorithms, help='Algorithms to be used')
     parser.add_argument('-g', '--arguments', metavar='ARGS', type=str, help='Arguments to be passed to the underlying script')
     parser.add_argument('-u', '--undirected', action='store_true', help='Flag for generating undirected networks')
@@ -223,7 +234,7 @@ def run_experiment(basedir, scratch, config, undirected, repeat, bnlearn, compar
     if bnlearn:
         dotfile += '_bnlearn'
     dotfile += '.dot'
-    outfile = dotfile if not os.path.exists(dotfile) else NamedTemporaryFile(suffix='.dot', dir=scratch, delete=False).name
+    outfile = dotfile if not isfile(dotfile) else NamedTemporaryFile(suffix='.dot', dir=scratch, delete=False).name
     r = 0
     t = 0
     while r < repeat:
@@ -291,7 +302,7 @@ def main():
     else:
         for dataset in datasets:
             ds = list(all_datasets[dataset])
-            all_datasets[dataset] = tuple([join(args.basedir, ds[0])] + ds[1:])
+            all_datasets[dataset] = tuple([join(args.basedir, ds[0])] + ds[1:]) if not isfile(ds[0]) else ds
     executable = join(args.basedir, 'ramble' + args.suffix) if not args.bnlearn else join(args.basedir, 'common', 'scripts', 'ramble_bnlearn.R')
     exec_configs = get_executable_configurations(executable, datasets, args.algorithm, args.arguments, args.undirected, args.bnlearn)
     if not args.bnlearn:
