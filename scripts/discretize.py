@@ -19,7 +19,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pandas
+from utils import read_dataset, write_dataset
 
 
 def parse_args():
@@ -39,32 +39,12 @@ def parse_args():
     return args
 
 
-def read_dataset(name, sep, colobs, varnames, indices):
-    '''
-    Read the dataset from the given CSV file.
-    '''
-    header = None
-    index = False
-    if colobs:
-        if indices:
-            header = 0
-        if varnames:
-            index = 0
-    else:
-        if varnames:
-            header = 0
-        if indices:
-            index = 0
-    dataset = pandas.read_csv(name, sep=sep, header=header, index_col=index)
-    if colobs:
-        dataset = dataset.T
-    return dataset
-
-
 def discretize_column(column, intervals):
     '''
     Discretize a column using the given interval edges.
     '''
+    import pandas
+
     # Lower bound the given intervals
     intervals.insert(0, column.min())
     # Upper bound the given intervals
@@ -95,26 +75,6 @@ def discretize(dataset):
     multiples = [lower, upper]
     discretized = dataset.apply(lambda c: discretize_column(c, create_intervals(c.mean(), multiples)), axis=0)
     return discretized
-
-
-def write_dataset(dataset, name, sep, colobs, varnames, indices):
-    '''
-    Write the dataset as a CSV file.
-    '''
-    header = False
-    index = False
-    if colobs:
-        dataset = dataset.T
-        if indices:
-            header = True
-        if varnames:
-            index = True
-    else:
-        if varnames:
-            header = True
-        if indices:
-            index = True
-    dataset.to_csv(name, sep=sep, header=header, index=index)
 
 
 def main():

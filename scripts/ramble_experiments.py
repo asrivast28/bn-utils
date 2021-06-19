@@ -19,16 +19,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import OrderedDict
-from datetime import datetime
 from itertools import product
-from multiprocessing import cpu_count
 import os
 import os.path
-from os.path import basename, isfile, join, splitext
-import sys
-from tempfile import NamedTemporaryFile
+from os.path import basename, isfile, join
 
-from discretize import read_dataset, write_dataset
+from utils import get_hostfile, get_mpi_configurations, read_dataset, write_dataset, get_runtime
 
 
 small_datasets = OrderedDict([
@@ -70,9 +66,7 @@ all_algorithms = [
     'iamb',
     'inter.iamb',
     'mmpc',
-    'hiton',
     'si.hiton.pc',
-    'getpc',
     'pc.stable',
     ]
 
@@ -81,14 +75,6 @@ all_processes = [
 for power in range(0, 11):
     all_processes.append(2 ** power)
 
-ppn_mappings = OrderedDict([
-    (16, '1:2:3:4:5:6:7:8:13:14:15:16:17:18:19:20'),
-    (18, '1:2:3:4:5:6:7:8:9:13:14:15:16:17:18:19:20:21'),
-    (20, '1:2:3:4:5:6:7:8:9:10:13:14:15:16:17:18:19:20:21:22'),
-    (22, '1:2:3:4:5:6:7:8:9:10:11:13:14:15:16:17:18:19:20:21:22:23'),
-    (24, '0:1:2:3:4:5:6:7:8:9:10:11:12:13:14:15:16:17:18:19:20:21:22:23'),
-    ])
-
 NUM_REPEATS = 5
 
 
@@ -96,6 +82,8 @@ def parse_datasets(args):
     '''
     Get datasets to be used for the experiments.
     '''
+    from os.path import splitext
+
     experiment_datasets = []
     if args.dataset is None:
         args.dataset = list(big_datasets.keys())
@@ -121,6 +109,7 @@ def parse_args():
     Parse command line arguments.
     '''
     import argparse
+    from multiprocessing import cpu_count
     from os.path import expanduser, realpath
 
     parser = argparse.ArgumentParser(description='Run scaling experiments')
@@ -167,45 +156,6 @@ def get_executable_configurations(executable, datasets, algorithms, arguments, u
     return configurations
 
 
-def get_hostfile(scratch, ppn):
-    nodefile = os.environ['PBS_NODEFILE']
-    seen = set()
-    hosts = []
-    with open(nodefile, 'r') as nf:
-        for n in nf.readlines():
-            if n not in seen:
-                hosts.append(n.strip() + ':%d' % ppn)
-            seen.add(n)
-    with NamedTemporaryFile(mode='w', suffix='.hosts', dir=scratch, delete=False) as hf:
-        hf.write('\n'.join(hosts) + '\n')
-    return hf.name
-
-
-def get_mpi_configurations(scratch, processes, ppns, extra_mpi_args):
-    default_mpi_args = ['-env MV2_SHOW_CPU_BINDING 1', '-env MV2_HYBRID_ENABLE_THRESHOLD 8192']
-    configurations = []
-    ppn_hostfiles = dict((ppn, get_hostfile(scratch, ppn)) for ppn in ppns)
-    for p, ppn in product(processes, ppns):
-        mpi_args = ['mpirun -np %d -hostfile %s -env MV2_CPU_MAPPING %s' % (p, ppn_hostfiles[ppn], ppn_mappings[ppn])]
-        mpi_args.extend(default_mpi_args)
-        if extra_mpi_args is not None:
-            mpi_args.append(extra_mpi_args)
-        configurations.append((p, ' '.join(mpi_args)))
-    return configurations
-
-
-def get_runtime(action, output, required=True):
-    import re
-
-    float_pattern = r'((?:(?:\d*\.\d+)|(?:\d+\.?))(?:[Ee][+-]?\d+)?)'
-    pattern = 'Time taken in %s: %s' % (action, float_pattern)
-    match = re.search(pattern, output)
-    if required:
-        return float(match.group(1))
-    else:
-        return float(match.group(1) if match is not None else 0)
-
-
 def parse_runtimes(output):
     # optional runtimes
     warmup = get_runtime('warming up MPI', output, required=False)
@@ -225,7 +175,10 @@ def parse_runtimes(output):
 
 
 def run_experiment(basedir, scratch, config, undirected, repeat, bnlearn, compare):
+    from datetime import datetime
     import subprocess
+    import sys
+    from tempfile import NamedTemporaryFile
 
     MAX_TRIES = 5
     dotfile = join(scratch, '%s_%s' % (config[0], config[1]))

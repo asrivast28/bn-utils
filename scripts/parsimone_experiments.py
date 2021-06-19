@@ -19,16 +19,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import OrderedDict
-from datetime import datetime
 from itertools import product
-from multiprocessing import cpu_count
 import os
 import os.path
-from os.path import join, basename
-import sys
-from tempfile import NamedTemporaryFile, TemporaryDirectory
+from os.path import join
 
-from discretize import read_dataset, write_dataset
+from utils import get_hostfile, get_mpi_configurations, read_dataset, write_dataset, get_runtime
 
 
 big_datasets = OrderedDict([
@@ -87,6 +83,7 @@ def parse_args():
     Parse command line arguments.
     '''
     import argparse
+    from multiprocessing import cpu_count
     from os.path import expanduser, realpath
 
     parser = argparse.ArgumentParser(description='Run scaling experiments')
@@ -154,45 +151,6 @@ def get_executable_configurations(executable, datasets, algorithms, arguments, l
     return configurations
 
 
-def get_hostfile(scratch, ppn):
-    nodefile = os.environ['PBS_NODEFILE']
-    seen = set()
-    hosts = []
-    with open(nodefile, 'r') as nf:
-        for n in nf.readlines():
-            if n not in seen:
-                hosts.append(n.strip() + ':%d' % ppn)
-            seen.add(n)
-    with NamedTemporaryFile(mode='w', suffix='.hosts', dir=scratch, delete=False) as hf:
-        hf.write('\n'.join(hosts) + '\n')
-    return hf.name
-
-
-def get_mpi_configurations(scratch, processes, ppns, extra_mpi_args):
-    default_mpi_args = ['-env MV2_SHOW_CPU_BINDING 1']
-    configurations = []
-    ppn_hostfiles = dict((ppn, get_hostfile(scratch, ppn)) for ppn in ppns)
-    for p, ppn in product(processes, ppns):
-        mpi_args = ['mpirun -np %d -hostfile %s -env MV2_CPU_MAPPING %s' % (p, ppn_hostfiles[ppn], ppn_mappings[ppn])]
-        mpi_args.extend(default_mpi_args)
-        if extra_mpi_args is not None:
-            mpi_args.append(extra_mpi_args)
-        configurations.append((p, ' '.join(mpi_args)))
-    return configurations
-
-
-def get_runtime(action, output, required=True):
-    import re
-
-    float_pattern = r'((?:(?:\d*\.\d+)|(?:\d+\.?))(?:[Ee][+-]?\d+)?)'
-    pattern = 'Time taken in %s: %s' % (action, float_pattern)
-    match = re.search(pattern, output)
-    if required:
-        return float(match.group(1))
-    else:
-        return float(match.group(1) if match is not None else 0)
-
-
 def parse_runtimes(output):
     # optional runtimes
     warmup = get_runtime('warming up MPI', output, required=False)
@@ -212,7 +170,10 @@ def parse_runtimes(output):
 
 
 def run_experiment(basedir, scratch, config, outsuffix, repeat, lemontree, compare):
+    from datetime import datetime
     import subprocess
+    import sys
+    from tempfile import TemporaryDirectory
 
     MAX_TRIES = 5
     dirname = join(scratch, config[0])
