@@ -68,6 +68,7 @@ all_algorithms = [
     'mmpc',
     'si.hiton.pc',
     'pc.stable',
+    'pc.stable.2',
     ]
 
 all_processes = [
