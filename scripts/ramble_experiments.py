@@ -50,7 +50,6 @@ simulated_datasets = OrderedDict([
     ('s1' , ('data/simulated/n30000_p0.00005_m10000_discretized.tsv', 30000, 10000, ' ', True, True, False)),
     ('s2' , ('data/simulated/n30000_p0.0001_m10000_discretized.tsv', 30000, 10000, ' ', True, True, False)),
     ('s3' , ('data/simulated/n30000_p0.0005_m10000_discretized.tsv', 30000, 10000, ' ', True, True, False)),
-    ('s4' , ('data/simulated/n30000_p0.001_m10000_discretized.tsv', 30000, 10000, ' ', True, True, False)),
     ])
 
 dataset_groups = dict([
