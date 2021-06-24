@@ -24,7 +24,7 @@ import os
 import os.path
 from os.path import join
 
-from utils import get_hostfile, get_mpi_configurations, read_dataset, write_dataset, get_runtime
+from utils import get_hostfile, get_mpi_configurations, read_dataset, write_dataset, get_experiment_datasets, get_runtime
 
 
 big_datasets = OrderedDict([
@@ -105,32 +105,6 @@ def parse_args():
     args = parser.parse_args()
     parse_datasets(args)
     return args
-
-
-def get_experiment_datasets(basedir, datasets, variables, observations, scratch):
-    experiment_datasets = []
-    if not variables:
-        variables = [None]
-    if not observations:
-        observations = [None]
-    for dname, n, m in product(datasets, variables, observations):
-        if n is None and m is None:
-            experiment_datasets.append(dname)
-        else:
-            dataset = all_datasets[dname]
-            n = n if n is not None else dataset[1]
-            m = m if m is not None else dataset[2]
-            exp_dname = '%s_n%d_m%d' % (dname, n, m)
-            exp_dataset = list(dataset)
-            exp_dataset[0] = join(scratch, '%s%s' % (exp_dname, os.path.splitext(dataset[0])[1]))
-            exp_dataset[1] = n
-            exp_dataset[2] = m
-            if not os.path.exists(exp_dataset[0]):
-                read = read_dataset(join(basedir, dataset[0]), dataset[3], dataset[4], dataset[5], dataset[6])
-                write_dataset(read.iloc[:m,:n], exp_dataset[0], exp_dataset[3], exp_dataset[4], exp_dataset[5], exp_dataset[6])
-            all_datasets.update([(exp_dname, tuple(exp_dataset))])
-            experiment_datasets.append(exp_dname)
-    return experiment_datasets
 
 
 def get_executable_configurations(executable, datasets, algorithms, arguments, lemontree):
@@ -227,7 +201,7 @@ def main():
     args = parse_args()
     datasets = args.dataset
     if args.variables or args.observations:
-        datasets = get_experiment_datasets(args.basedir, datasets, args.variables, args.observations, args.scratch)
+        datasets = get_experiment_datasets(args.basedir, datasets, args.variables, args.observations, args.scratch, all_datasets)
     else:
         for dataset in datasets:
             ds = list(all_datasets[dataset])

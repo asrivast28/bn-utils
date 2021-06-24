@@ -21,10 +21,9 @@
 from collections import OrderedDict
 from itertools import product
 import os
-import os.path
 from os.path import basename, isfile, join
 
-from utils import get_hostfile, get_mpi_configurations, read_dataset, write_dataset, get_runtime
+from utils import get_hostfile, get_mpi_configurations, read_dataset, write_dataset, get_experiment_datasets, get_runtime
 
 
 small_datasets = OrderedDict([
@@ -116,6 +115,8 @@ def parse_args():
     parser.add_argument('--basedir', metavar='DIR', type=str, default=realpath(join(expanduser('~'), 'ramBLe')), help='Base directory for running the experiments')
     parser.add_argument('--scratch', metavar='DIR', type=str, default=realpath(join(expanduser('~'), 'scratch')), help='Scratch directory, visible to all the nodes')
     parser.add_argument('-d', '--dataset', metavar='NAME', type=str, nargs='*', help='Predefined dataset (or groups of datasets) or filename containing the dataset')
+    parser.add_argument('-n', '--variables', metavar='N', type=int, nargs='*', help='Number of variable(s) to be used')
+    parser.add_argument('-m', '--observations', metavar='M', type=int, nargs='*', help='Number of observation(s) to be used')
     parser.add_argument('-s', '--separator', type=str, metavar='DELIM', help='Delimiting character in the data set file')
     parser.add_argument('-c', '--colobs', action='store_true', help='The data set file contains observations in columns')
     parser.add_argument('-v', '--varnames', action='store_true', help='The data set file contains variable names')
@@ -250,7 +251,9 @@ def main():
     '''
     args = parse_args()
     datasets = args.dataset
-    if args.weak:
+    if args.variables or args.observations:
+        datasets = get_experiment_datasets(args.basedir, datasets, args.variables, args.observations, args.scratch, all_datasets)
+    elif args.weak:
         datasets = get_weak_scaling_datasets(args.basedir, datasets, args.weak, args.scratch)
     else:
         for dataset in datasets:

@@ -19,6 +19,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from itertools import product
+
 
 def get_hostfile(scratch, ppn):
     import os
@@ -39,7 +41,6 @@ def get_hostfile(scratch, ppn):
 
 def get_mpi_configurations(scratch, processes, ppns, extra_mpi_args):
     from collections import OrderedDict
-    from itertools import product
 
     custom_ppn_mappings = OrderedDict([
         (16, '1:2:3:4:5:6:7:8:13:14:15:16:17:18:19:20'),
@@ -102,6 +103,32 @@ def write_dataset(dataset, name, sep, colobs, varnames, indices):
         if indices:
             index = True
     dataset.to_csv(name, sep=sep, header=header, index=index)
+
+
+def get_experiment_datasets(basedir, datasets, variables, observations, scratch, all_datasets):
+    import os
+    from os.path import join
+
+    experiment_datasets = []
+    if not variables:
+        variables = [None]
+    if not observations:
+        observations = [None]
+    for dname, n, m in product(datasets, variables, observations):
+        dataset = all_datasets[dname]
+        n = n if n is not None else dataset[1]
+        m = m if m is not None else dataset[2]
+        exp_dname = '%s_n%d_m%d' % (dname, n, m)
+        exp_dataset = list(dataset)
+        exp_dataset[0] = os.path.join(scratch, '%s%s' % (exp_dname, os.path.splitext(dataset[0])[1]))
+        exp_dataset[1] = n
+        exp_dataset[2] = m
+        if not os.path.exists(exp_dataset[0]):
+            read = read_dataset(join(basedir, dataset[0]), dataset[3], dataset[4], dataset[5], dataset[6])
+            write_dataset(read.iloc[:m,:n], exp_dataset[0], exp_dataset[3], exp_dataset[4], exp_dataset[5], exp_dataset[6])
+        all_datasets.update([(exp_dname, tuple(exp_dataset))])
+        experiment_datasets.append(exp_dname)
+    return experiment_datasets
 
 
 def get_runtime(action, output, required=True):
