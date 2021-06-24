@@ -39,7 +39,7 @@ def get_hostfile(scratch, ppn):
     return hf.name
 
 
-def get_mpi_configurations(scratch, processes, ppns, extra_mpi_args):
+def get_mpi_configurations(scratch, processes, ppns, extra_mpi_args, hostfile):
     from collections import OrderedDict
 
     custom_ppn_mappings = OrderedDict([
@@ -50,7 +50,7 @@ def get_mpi_configurations(scratch, processes, ppns, extra_mpi_args):
         ])
     default_mpi_args = ['-env MV2_SHOW_CPU_BINDING 1', '-env MV2_HYBRID_ENABLE_THRESHOLD 8192']
     configurations = []
-    ppn_hostfiles = dict((ppn, get_hostfile(scratch, ppn)) for ppn in ppns)
+    ppn_hostfiles = dict((ppn, get_hostfile(scratch, ppn) if hostfile is None else hostfile) for ppn in ppns)
     for p, ppn in product(processes, ppns):
         cpu_mapping = custom_ppn_mappings.get(ppn, ':'.join(str(p) for p in range(ppn)))
         mpi_args = ['mpirun -np %d -hostfile %s -env MV2_CPU_MAPPING %s' % (p, ppn_hostfiles[ppn], cpu_mapping)]

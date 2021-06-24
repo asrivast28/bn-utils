@@ -128,6 +128,7 @@ def parse_args():
     parser.add_argument('--ppn', metavar='PPN', type=int, nargs='*', default=[cpu_count()], help='Number of processes per node to be used')
     parser.add_argument('-r', '--repeat', metavar='N', type=int, default=NUM_REPEATS, help='Number of times the experiments should be repeated')
     parser.add_argument('--mpi-arguments', metavar='ARGS', type=str, help='Arguments to be passed to mpirun')
+    parser.add_argument('--hostfile', metavar='HOSTS', type=str, help='Hostfile to be used for the runs')
     parser.add_argument('--bnlearn', action='store_true', help='Flag for running bnlearn instead of our implementation')
     parser.add_argument('--results', metavar = 'FILE', type=str, default='results_%s' % os.environ.get('PBS_JOBID', 0), help='Name of the csv file to which results will be written')
     parser.add_argument('--suffix', type=str, default='', help='Suffix to add to the executable')
@@ -262,7 +263,7 @@ def main():
     executable = join(args.basedir, 'ramble' + args.suffix) if not args.bnlearn else join(args.basedir, 'common', 'scripts', 'ramble_bnlearn.R')
     exec_configs = get_executable_configurations(executable, datasets, args.algorithm, args.arguments, args.undirected, args.bnlearn)
     if not args.bnlearn:
-        mpi_configs = get_mpi_configurations(args.scratch, args.process, args.ppn, args.mpi_arguments)
+        mpi_configs = get_mpi_configurations(args.scratch, args.process, args.ppn, args.mpi_arguments, args.hostfile)
         if args.weak:
             all_configs = []
             i_m = 0
