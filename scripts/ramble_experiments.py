@@ -130,7 +130,7 @@ def parse_args():
     parser.add_argument('--mpi-arguments', metavar='ARGS', type=str, help='Arguments to be passed to mpirun')
     parser.add_argument('--hostfile', metavar='HOSTS', type=str, help='Hostfile to be used for the runs')
     parser.add_argument('--bnlearn', action='store_true', help='Flag for running bnlearn instead of our implementation')
-    parser.add_argument('--results', metavar = 'FILE', type=str, default='results_%s' % os.environ.get('PBS_JOBID', 0), help='Name of the csv file to which results will be written')
+    parser.add_argument('--results', metavar = 'FILE', type=str, default='results_%s.csv' % os.environ.get('PBS_JOBID', 0), help='Name of the csv file to which results will be written')
     parser.add_argument('--suffix', type=str, default='', help='Suffix to add to the executable')
     parser.add_argument('--weak', metavar='N', type=int, nargs='*', help='Number of variables to be used on each processor')
     args = parser.parse_args()

@@ -26,7 +26,9 @@ def get_hostfile(scratch, ppn):
     import os
     from tempfile import NamedTemporaryFile
 
-    nodefile = os.environ['PBS_NODEFILE']
+    nodefile = os.environ.get('PBS_NODEFILE')
+    if nodefile is None:
+        return None
     seen = set()
     hosts = []
     with open(nodefile, 'r') as nf:
@@ -53,7 +55,10 @@ def get_mpi_configurations(scratch, processes, ppns, extra_mpi_args, hostfile):
     ppn_hostfiles = dict((ppn, get_hostfile(scratch, ppn) if hostfile is None else hostfile) for ppn in ppns)
     for p, ppn in product(processes, ppns):
         cpu_mapping = custom_ppn_mappings.get(ppn, ':'.join(str(p) for p in range(ppn)))
-        mpi_args = ['mpirun -np %d -hostfile %s -env MV2_CPU_MAPPING %s' % (p, ppn_hostfiles[ppn], cpu_mapping)]
+        mpi_args = ['mpirun -np %d' % p]
+        if ppn_hostfiles[ppn] is not None:
+            mpi_args.append('-hostfile %s' % ppn_hostfiles[ppn])
+        mpi_args.append('-env MV2_CPU_MAPPING %s' % cpu_mapping)
         mpi_args.extend(default_mpi_args)
         if extra_mpi_args is not None:
             mpi_args.append(extra_mpi_args)
